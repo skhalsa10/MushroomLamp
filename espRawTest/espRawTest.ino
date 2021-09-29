@@ -42,6 +42,7 @@
 
 //Include statements for here
 #include <SoftwareSerial.h>
+#include <avr/pgmspace.h>
 
 //define some constants using the preprocessor
 #define ESP_TX_ARD_RX 2 // equal to the RX of arduino
@@ -68,18 +69,13 @@ String getData =
   "Connection: Keep-Alive\n" +
   "\n";
   
-//buffer to store Get Reply
-char getReply[2000];
+
 
 //serial connection emulated in software receive data on pin in first param
 //send data out the second param.
 SoftwareSerial ESP8266(ESP_TX_ARD_RX, ESP_RX_ARD_TX); //Arduino (rx pin, tx pin)
 
 void setup() {
-  //null out buffer
-  for(int i = 0; i< 2000; i++){
-    getReply[i] = '\0';
-  }
 
   //Pin Modes for ESP TX/RX
   pinMode(ESP_TX_ARD_RX, INPUT);
@@ -126,9 +122,10 @@ bool sendCommand(String command, long timeout, char expectedReply[], boolean isG
   
   ESP8266.setTimeout(timeout);
   long startTime = millis();
+  String toMatch = "temp_f\":";
   int matchIndex = 0;
-  char temp[3];
-  temp[2] = '_';
+  char temperature[3];
+  temperature[2] = '\0';
 
   
   //Test Purpose
@@ -140,49 +137,43 @@ bool sendCommand(String command, long timeout, char expectedReply[], boolean isG
   ESP8266.println(command);
   ESP8266.flush();
 
-  Serial.println(isGetRequest);
-  int i = 0;
+
+  
   while(millis()-startTime < timeout){
     
-    while(ESP8266.available()){
-      char c = ESP8266.read();
-
-      //if I uncomment this IF than i start missing incoming data it gets lost
-      
-//      if(isGetRequest){
-//        Serial.print(c);
-//        getData[i] = c;
-        i++;
-//        if(matchIndex < 7){
-//          Serial.println(String(c) + ":" + String(keyMatch[matchIndex]));
-//          if(c == keyMatch[matchIndex]){
-//            matchIndex++;
-//          }else{
-//            matchIndex = 0;
-//          }
-//        }else if(matchIndex >= 8 && matchIndex <10){
+    while(ESP8266.available()>0 ){
+      if(isGetRequest){
+        char tempBuffer[60];
+        int bufferFilled = ESP8266.readBytes(tempBuffer, 60);
+        Serial.print("BufferFilled: ");
+        Serial.println(bufferFilled);
+//       for(int i = 0; i<bufferFilled; i++){
+//          char c = tempBuffer[i];
+//          //Serial.print("c: ");
+//          //Serial.print(c);
+//          if(matchIndex < 7){
+//            //Serial.print(" Match: ");
+//            //Serial.println(toMatch.charAt(matchIndex));
+//            if(c == toMatch.charAt(matchIndex)){
+//              matchIndex++;
+//            }else{
+//              matchIndex = 0;
+//            }
+//          }else if(matchIndex >= 8 && matchIndex <10){
 //          Serial.println("FOUND TEMP");
 //          Serial.println(c);
-//          temp[matchIndex-8] = c;
+//          temperature[matchIndex-8] = c;
 //          matchIndex++;
+//          }
 //        }
-//      }
-      //this will print the full get request as long as I dont try to do anything more but this
-      Serial.print(c);
+        
+      }else{
+        char c = ESP8266.read();
+        Serial.print(c);
+      } 
     }
   }
-  // this is for debugging
-  Serial.println(i);
-  if(isGetRequest){
-    for(int j = 0; j< i;j++){
-      Serial.print(getData[j]);
-    }
-  }
-  
 
-
-  //String reply = ESP8266.readString();
-  
   ESP8266.setTimeout(DEFAULT_TIMEOUT);
   Serial.println("\nEnding send command\n");
   return true;
