@@ -1,4 +1,5 @@
 from flask import Flask
+from flask import jsonify
 import requests
 
 app = Flask(__name__)
@@ -13,7 +14,7 @@ PARAMS = {'key': key, 'q':q, 'aqi': aqi}
 def getTempF():
     r = requests.get(url = URL, params= PARAMS)
     data = r.json()
-    return str(data['current']['temp_f'])
+    return jsonify(temp_f=data['current']['temp_f'])
 
 @app.route("/temp-f")
 def getTempInF():

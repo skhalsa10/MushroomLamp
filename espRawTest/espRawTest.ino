@@ -9,6 +9,9 @@
  * will be getting data from:
  * http://api.weatherapi.com/v1/current.json?key=a38c63037d8746d18dd33450211609&q=Albuquerque&aqi=no 
  * 
+ * Made my own API I will now test with:
+ * http://mushroom-lamp.herokuapp.com/temp-f
+ * 
  * The goal is to get temperature value from a weather API periodically. I will then map this number to a 
  * Color  on an LED mushroom lamp
  * 
@@ -53,11 +56,11 @@ String SSID_ESP = "snazzyhouse";         //Give EXACT name of your WIFI
 String SSID_KEY = "Monkey3010"; 
 
 //the host to send get request to
-String HOST = "api.weatherapi.com";
+String HOST = "mushroom-lamp.herokuapp.com";
 String PORT = "80";
 boolean found = false; 
 //this will send us the correct info
-String URI = "/v1/current.json?key=a38c63037d8746d18dd33450211609&q=Albuquerque&aqi=no";
+String URI = "/temp-f";
 const long DEFAULT_TIMEOUT = 5000;
 
 // Get request to send down the TCP pipe
@@ -119,16 +122,13 @@ bool ConnectToWifi(){
 } 
 
 bool sendCommand(String command, long timeout, char expectedReply[], boolean isGetRequest) {
-  
   ESP8266.setTimeout(timeout);
   long startTime = millis();
-  String toMatch = "temp_f\":";
   int matchIndex = 0;
-  char temperature[3];
-  temperature[2] = '\0';
+  char temp[3];
+  temp[2] = '_';
 
-  
-  //Test Purpose
+  //test purposes
   Serial.print("Running Command: ");
   Serial.print(command);
   Serial.println();
@@ -137,44 +137,18 @@ bool sendCommand(String command, long timeout, char expectedReply[], boolean isG
   ESP8266.println(command);
   ESP8266.flush();
 
-
-  
+  int i = 0;
   while(millis()-startTime < timeout){
-    
-    while(ESP8266.available()>0 ){
-      if(isGetRequest){
-        char tempBuffer[60];
-        int bufferFilled = ESP8266.readBytes(tempBuffer, 60);
-        Serial.print("BufferFilled: ");
-        Serial.println(bufferFilled);
-//       for(int i = 0; i<bufferFilled; i++){
-//          char c = tempBuffer[i];
-//          //Serial.print("c: ");
-//          //Serial.print(c);
-//          if(matchIndex < 7){
-//            //Serial.print(" Match: ");
-//            //Serial.println(toMatch.charAt(matchIndex));
-//            if(c == toMatch.charAt(matchIndex)){
-//              matchIndex++;
-//            }else{
-//              matchIndex = 0;
-//            }
-//          }else if(matchIndex >= 8 && matchIndex <10){
-//          Serial.println("FOUND TEMP");
-//          Serial.println(c);
-//          temperature[matchIndex-8] = c;
-//          matchIndex++;
-//          }
-//        }
-        
-      }else{
-        char c = ESP8266.read();
-        Serial.print(c);
-      } 
+
+    while(ESP8266.available()){
+      char c = ESP8266.read();
+      i++;
+      Serial.print(c);
     }
   }
 
   ESP8266.setTimeout(DEFAULT_TIMEOUT);
   Serial.println("\nEnding send command\n");
   return true;
+ 
 }
