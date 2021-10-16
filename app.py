@@ -14,7 +14,8 @@ PARAMS = {'key': key, 'q':q, 'aqi': aqi}
 def getTempF():
     r = requests.get(url = URL, params= PARAMS)
     data = r.json()
-    return jsonify(temp_f=data['current']['temp_f'])
+    #return jsonify(temp_f=data['current']['temp_f'])
+    return str(data['current']['temp_f'])
 
 @app.route("/temp-f")
 def getTempInF():

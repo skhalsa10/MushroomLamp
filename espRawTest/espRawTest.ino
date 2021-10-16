@@ -65,12 +65,12 @@ const long DEFAULT_TIMEOUT = 5000;
 
 // Get request to send down the TCP pipe
 String getData = 
-  "GET " + URI + " HTTP/1.0\n" +
-  "Host: " + HOST + "\n" +
-  "Accept: application/json\n" +
-  "Content-Type: application/json\n" +
-  "Connection: Keep-Alive\n" +
-  "\n";
+  "GET " + URI + " HTTP/1.1\r\n" +
+  "Host: " + HOST + "\r\n" +
+  "Accept: application/json\r\n" +
+  "Content-Type: application/json\r\n" +
+  "Connection: Keep-Alive\r\n" +
+  "\r\n";
   
 
 
@@ -95,7 +95,7 @@ void setup() {
   ConnectToWifi();
   delay(2000);
    
-  sendCommand("AT+CIPSTART=\"TCP\",\""+ HOST +"\","+ PORT,150,"OK",false);
+  sendCommand("AT+CIPSTART=\"TCP\",\""+ HOST +"\","+ PORT,5000,"OK",false);
   sendCommand("AT+CIPSEND=" +String(getData.length()+2),500,">",false);
   sendCommand(getData,50000,"OK",true);
   //sendCommand("AT+CIPCLOSE",500,"OK",false);
