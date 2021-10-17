@@ -98,8 +98,8 @@ void setup() {
    
   sendCommand("AT+CIPSTART=\"TCP\",\""+ HOST +"\","+ PORT,5000,"OK",false);
   sendCommand("AT+CIPSEND=" +String(getData.length()+2),500,">",false);
-  sendCommand(getData,50000,"OK",false);
-  //sendCommand("AT+CIPCLOSE",500,"OK",false);
+  sendCommand(getData,50000,"OK",true);
+  sendCommand("AT+CIPCLOSE",500,"OK",false);
   Serial.println("ENDING SETUP");
   delay(1000);
 }
@@ -141,7 +141,7 @@ bool sendCommand(String command, long timeout, char expectedReply[], boolean isG
   delay(150);
 
   if(isGetRequest){
-      String response = ESP8266.readStringUntil('.');
+      String response = ESP8266.readStringUntil('*');
       Serial.print("response: ");
       Serial.println(response);
       int parsedResponse = response.toInt();
