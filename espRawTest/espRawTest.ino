@@ -71,7 +71,8 @@ String getData =
   "Content-Type: application/json\r\n" +
   "Connection: Keep-Alive\r\n" +
   "\r\n";
-  
+
+int temperature = 150;
 
 
 //serial connection emulated in software receive data on pin in first param
@@ -97,7 +98,7 @@ void setup() {
    
   sendCommand("AT+CIPSTART=\"TCP\",\""+ HOST +"\","+ PORT,5000,"OK",false);
   sendCommand("AT+CIPSEND=" +String(getData.length()+2),500,">",false);
-  sendCommand(getData,50000,"OK",true);
+  sendCommand(getData,50000,"OK",false);
   //sendCommand("AT+CIPCLOSE",500,"OK",false);
   Serial.println("ENDING SETUP");
   delay(1000);
@@ -107,6 +108,7 @@ void loop() {
 
   
 }
+
 bool ConnectToWifi(){
 
     sendCommand("AT",500,"OK",false);
@@ -136,16 +138,35 @@ bool sendCommand(String command, long timeout, char expectedReply[], boolean isG
   ESP8266.flush();
   ESP8266.println(command);
   ESP8266.flush();
+  delay(150);
 
-  int i = 0;
-  while(millis()-startTime < timeout){
-
-    while(ESP8266.available()){
-      char c = ESP8266.read();
-      i++;
-      Serial.print(c);
+  if(isGetRequest){
+      String response = ESP8266.readStringUntil('.');
+      Serial.print("response: ");
+      Serial.println(response);
+      int parsedResponse = response.toInt();
+      Serial.print("parsed get response: ");
+      Serial.println(parsedResponse);
+      if(parsedResponse ==0){
+        temperature = 150;
+        ESP8266.setTimeout(DEFAULT_TIMEOUT);
+        Serial.println("\nEnding send command\n");
+        return false;
+      }else{
+        temperature = parsedResponse;
+        ESP8266.setTimeout(DEFAULT_TIMEOUT);
+        Serial.println("\nEnding send command\n");
+        return true; 
+      }
+  }else{
+    while(millis()-startTime < timeout){
+      while(ESP8266.available()){
+        char c = ESP8266.read();
+        Serial.print(c);
+      }
     }
   }
+
 
   ESP8266.setTimeout(DEFAULT_TIMEOUT);
   Serial.println("\nEnding send command\n");
